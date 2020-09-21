@@ -1,0 +1,36 @@
+{
+    "Sample space - Finite or Continuous?": [
+        {
+            "What do you do with objects - Pick or Permutate?": [
+                {
+                    "Does order matter - Yes or No?": [
+                        {
+                            "Can you replace your elements - Yes or No?": [
+                                "2.png 9.png",
+                                "3.png 10.png"
+                            ]
+                        },
+                        {
+                            "How many groups are there - One or More?": [
+                                "4.png 11.png",
+                                {
+                                    "Can groups be empty - Yes or No?": [
+                                        "7.png 1_1.png",
+                                        "8.png 1_2.png"
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "Are there repeatable elements - Yes or No?": [
+                        "6.png 13.png",
+                        "5.png 12.png"
+                    ]
+                }
+            ]
+        },
+        "*geometric probability explanation*"
+    ]
+}

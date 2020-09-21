@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import keys
 import os
+import json
 from telegram import (ReplyKeyboardMarkup, InlineKeyboardButton, InlineKeyboardMarkup)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler, PicklePersistence, CallbackQueryHandler)
@@ -14,32 +15,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-ANSWERS_TREE = {
-    "Sample space - Finite or Continuous?": [
-        {
-            "What do you do with objects - Pick or Permutate": [
-                {
-                    "Does order matter - Yes or No": [
-                        {
-                            "Can you replace your elements - Yes or No": [
-                                "yesformula",
-                                "noformula"
-                            ]
-                        },
-                        "noformula"
-                    ]
-                },
-                {
-                    "Are there repeatable elements - Yes or No": [
-                        "n!/k1!*k2!*...km!",
-                        "noformula"
-                    ]
-                }
-            ]
-        },
-        "*geometric probability explanation*"
-    ]
-}
+with open("tree.json", "r") as file:
+    ANSWERS_TREE = json.load(file)
 
 
 def start(update, context):
@@ -59,7 +36,11 @@ def answer_handler(update, context):
     Handles user's answers
     """
     query = update.callback_query
-    message = query['message']['reply_markup']['inline_keyboard'][0][0].callback_data
+    user_choice = update.callback_query.data
+    reply_text = ""
+    is_photo = False
+    print(user_choice)
+    print("Message", user_choice)
 
     # Go to the current tree position saved for this user
     state = context.chat_data['state']
@@ -69,27 +50,37 @@ def answer_handler(update, context):
 
     if isinstance(current_tree, dict):
         reply_text = list(current_tree.keys())[0]
-        keyboard = [[InlineKeyboardButton("First", callback_data="0")],
-                    [InlineKeyboardButton("Second", callback_data="1")]]
+        index = reply_text.find(" - ")
+        button_text = [reply_text[index + 3:].split(" ")[0], reply_text[index + 3:].split(" ")[2]]
+        keyboard = [[InlineKeyboardButton(button_text[0], callback_data="0")],
+                    [InlineKeyboardButton(button_text[1][:-1], callback_data="1")]]
         is_keyboard = True
         state.append(reply_text)
     elif isinstance(current_tree, list):
-        result = current_tree[int(message)]
+        result = current_tree[int(user_choice)]
 
         if isinstance(result, dict):
             reply_text = list(result.keys())[0]
-            keyboard = [[InlineKeyboardButton("First", callback_data="0")],
-                        [InlineKeyboardButton("Second", callback_data="1")]]
+            index = reply_text.find(" - ")
+            button_text = [reply_text[index + 3:].split(" ")[0], reply_text[index + 3:].split(" ")[2]]
+            keyboard = [[InlineKeyboardButton(button_text[0], callback_data="0")],
+                        [InlineKeyboardButton(button_text[1][:-1], callback_data="1")]]
             is_keyboard = True
-            state.append(int(message))
+            state.append(int(user_choice))
             state.append(reply_text)
         elif isinstance(result, str):
-            reply_text = result
+            is_keyboard = False
+            result = result.split(" ")
+            is_photo = True
+            context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(result[0], "rb"))
+            context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(result[1], "rb"))
             state = []
 
+    print(state)
     context.chat_data['state'] = state
 
-    query.edit_message_text(text=reply_text, parse_mode="Markdown")
+    if not is_photo:
+        query.edit_message_text(text=reply_text, parse_mode="Markdown")
     if is_keyboard:
         query.edit_message_reply_markup(reply_markup=InlineKeyboardMarkup(keyboard))
 
