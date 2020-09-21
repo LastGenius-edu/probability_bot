@@ -21,7 +21,7 @@ with open("tree.json", "r") as file:
 
 def start(update, context):
     reply_text = """Hello, I am a bot that helps you to figure out the right formula for combinatorial problems!
-    
+
     Press 'Ready' when you want me to help you with a problem
     """
     keyboard = [[InlineKeyboardButton("Ready", callback_data="ready")]]
@@ -72,8 +72,8 @@ def answer_handler(update, context):
             is_keyboard = False
             result = result.split(" ")
             is_photo = True
-            context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(result[0], "rb"))
-            context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(result[1], "rb"))
+            for photo in result:
+                context.bot.sendPhoto(chat_id=update.effective_chat.id, photo=open(photo, "rb"))
             state = []
 
     print(state)
